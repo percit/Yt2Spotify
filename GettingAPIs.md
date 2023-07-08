@@ -25,3 +25,5 @@ Note down the API credentials: After creating the OAuth client ID, you will see 
 - Create a new application: Once you are logged in to the Spotify Developer Dashboard, click on the "Create an App" button to create a new application. Use "http://localhost:8080/spotify" as Redirect URI 
 
 
+## Getting youtube playlist ID:
+Go to your target YouTube playlist on the browser. On the address bar, you will see something like this: https://www.youtube.com/watch?v=RLykC1VN7NY&list=PLFs4vir_WsTwEd-nJgVJCZPNL3HALHHpF. The playlist ID is the characters after “list=” so in the URL above, our playlist ID is PLFs4vir_WsTwEd-nJgVJCZPNL3HALHHpF.

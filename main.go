@@ -1,34 +1,39 @@
 package main
 
 import (
-	// "flag"
+	"flag"
 	"fmt"
+	"context"
+	"io/ioutil"
+	"log"
+	"strings"
+
+	// "google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
+	"google.golang.org/api/youtube/v3"
 	//github.com/percit/Yt2Spotify
 )
-
-// const SPOTIFY_SCOPE = "user-read-private user-read-email playlist-read-private playlist-modify-private"
-// const GOOGLE_SCOPE = "https://www.googleapis.com/auth/youtube.readonly"
 
 var GoogleApiToken string
 var GoogleClientID string
 var SpotifyApiToken string
 
-// func init() {
-// 	flag.StringVar(&GoogleApiToken, "g", "", "Google API Token")
+func init() {
+	flag.StringVar(&GoogleApiToken, "g", "", "Google API Token")
 // 	flag.StringVar(&GoogleClientID, "c", "", "Google Client ID")
 // 	flag.StringVar(&SpotifyApiToken, "s", "", "Spotify API Token")
-// 	flag.Parse()
-// }
+	flag.Parse()
+}
 
 func main() {
 	fmt.Println("Type Youtube playlist from which you wish to export songs")
-	var ytPlaylist string
-	_, err1 := fmt.Scan(&ytPlaylist)
+	var ytPlaylistID string
+	_, err1 := fmt.Scan(&ytPlaylistID)
 	if err1 != nil {
 		fmt.Println("Error reading input:", err1)
 		return
 	}
-	fmt.Println("Input string:", ytPlaylist)
+	fmt.Println("Input string:", ytPlaylistID)
 
 	fmt.Println("Type Spotify playlist to which you wish to import songs")
 	var spotifyPlaylist string
@@ -38,16 +43,20 @@ func main() {
 		return
 	}
 	fmt.Println("Input string:", spotifyPlaylist)
+	
 
-	fmt.Println("Your list of songs")
+
+	// ytPlaylistID := "PLxKqTrK2bWod_CaZ0JZ7twpdW6xJPLnzc"
+	songs, err := getYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
+	if err != nil {
+		log.Fatalf("Unable to get playlist items: %v", err)
+	}
+	var unwantedSongs []string
+
+
 	fmt.Println("Choose from 1 to 5 to add song to playlist, use 6 to skip the song")
-
-
-
-	var songNumbers int //HERE WE WOULD ADD HOW MANY SONG ARE THERE
-	for songNumbers > 0{
-		fmt.Println("HERE WOULD BE YT SONG NAME")
-		fmt.Println("HERE WOULD BE SPOTIFY OUTPUT WITH 5 FIRST SONGS")
+	for _, song := range songs {
+		fmt.Println(song)
 		
 		var userReply int
 		_, err := fmt.Scan(&userReply)
@@ -73,13 +82,55 @@ func main() {
 			}
 			case 6: {
 				fmt.Println("you chose to skip this song")
+				unwantedSongs = append(unwantedSongs, song)
 			}
 			default:{
 					fmt.Println("Something is wrong")
 			}
 		}
-		songNumbers--
 	}
 
-	//HERE WE WOULD BE MAKING .TXT WITH SONGS NOT USEDz
+	content := strings.Join(unwantedSongs, "\n")
+	errFile := ioutil.WriteFile("song_list.txt", []byte(content), 0644)
+	if err != nil {
+		log.Fatalf("Unable to write to file: %v", errFile)
+	}
+
+	fmt.Println("Song list saved to 'song_list.txt'")
 }
+
+func getYoutubePlaylistItems(playlistID string, apiKey string) ([]string, error) {
+	ctx := context.Background()
+	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
+	if err != nil {
+		return nil, err
+	}
+
+	var playlistItems []string
+
+	nextPageToken := ""
+	for {
+		playlistCall := youtubeService.PlaylistItems.List([]string{"snippet"}).
+		PlaylistId(playlistID).
+		MaxResults(50).
+		PageToken(nextPageToken)
+
+		playlistResponse, err := playlistCall.Do()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, playlistItem := range playlistResponse.Items {
+			playlistItems = append(playlistItems, playlistItem.Snippet.Title)
+		}
+
+		nextPageToken = playlistResponse.NextPageToken
+		if nextPageToken == "" {
+			break
+		}
+	}
+
+	return playlistItems, nil
+}
+
+//PLxKqTrK2bWod_CaZ0JZ7twpdW6xJPLnzc
