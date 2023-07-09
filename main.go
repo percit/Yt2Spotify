@@ -8,15 +8,15 @@ import (
 	"log"
 	"strings"
 
-	// "google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
-	// "github.com/zmb3/spotify"
-	spotifyauth "github.com/zmb3/spotify/v2/auth"
 	"golang.org/x/oauth2/clientcredentials"
-
 	"github.com/zmb3/spotify/v2"
+	spotifyauth "github.com/zmb3/spotify/v2/auth"
+
 	//github.com/percit/Yt2Spotify
+	// "github.com/zmb3/spotify"
+	// "google.golang.org/api/googleapi"
 )
 
 var GoogleApiToken string
@@ -58,12 +58,18 @@ func main() {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}
 	//SPOTIFY STUFF
-	// spotifyPlaylist := "7qVZ7RzkNmeKsMEHxYI5mq"
+	spotifyPlaylist := "7qVZ7RzkNmeKsMEHxYI5mq"
+	scopes := []string{
+		spotifyauth.ScopePlaylistModifyPublic,
+		spotifyauth.ScopePlaylistModifyPrivate,
+	}
 	ctx := context.Background()
 	config := &clientcredentials.Config{
 		ClientID:     SpotifyClientID,
 		ClientSecret: SpotifyClientSecret,
 		TokenURL:     spotifyauth.TokenURL,
+		Scopes:         scopes,
+		EndpointParams: nil,
 	}
 	token, err := config.Token(ctx)
 	if err != nil {
@@ -82,7 +88,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		if results.Tracks != nil {
 			fmt.Println("Songs:")
 			for i, track := range results.Tracks.Tracks {
@@ -101,35 +106,44 @@ func main() {
 		}
 		switch(userReply) {
 			case 1 : {
-				fmt.Println("you chose song 1")
-				// putSongIntoPlaylist(results.Tracks.Tracks[0], playlist)
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 2: {
-				fmt.Println("you chose song 2")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 3: {
-				fmt.Println("you chose song 3")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 4: {
-				fmt.Println("you chose song 4")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 5: {
-				fmt.Println("you chose song 5")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 6: {
-				fmt.Println("you chose song 6")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 7: {
-				fmt.Println("you chose song 7")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 8: {
-				fmt.Println("you chose song 8")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 9: {
-				fmt.Println("you chose song 9")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 10: {
-				fmt.Println("you chose song 10")
+				fmt.Println("you chose song" + results.Tracks.Tracks[0].Name)
+				client.AddTracksToPlaylist(ctx, spotify.ID(spotifyPlaylist), results.Tracks.Tracks[0].ID)
 			}
 			case 11: {
 				fmt.Println("you chose to skip this song")
