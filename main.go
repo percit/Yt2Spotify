@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"os"
+	"bufio"
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
@@ -25,8 +27,8 @@ var (
 		spotifyauth.WithScopes(
 		spotifyauth.ScopePlaylistModifyPublic,
 		spotifyauth.ScopePlaylistModifyPrivate,), 
-		spotifyauth.WithClientID(SpotifyClientID), 
-		spotifyauth.WithClientSecret(SpotifyClientSecret))
+		spotifyauth.WithClientID(""), 
+		spotifyauth.WithClientSecret(""))
 	ch    = make(chan *spotify.Client)
 	state = "abc123"
 )
@@ -39,24 +41,24 @@ func init() {
 }
 
 func main() {
-	ytPlaylistID, err := getUserInput("Type YouTube playlist from which you wish to export songs:")
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
+	// ytPlaylistID, err := getUserInput("Type YouTube playlist from which you wish to export songs:")
+	// if err != nil {
+	// 	fmt.Println("Error reading input:", err)
+	// 	return
+	// }
 
-	spotifyPlaylist, err := getUserInput("Type Spotify playlist to which you wish to import songs:")
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
+	// spotifyPlaylist, err := getUserInput("Type Spotify playlist to which you wish to import songs:")
+	// if err != nil {
+	// 	fmt.Println("Error reading input:", err)
+	// 	return
+	// }
 
-	//YOUTUBE STUFF
+	// YOUTUBE STUFF
 	songs, err := getYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
 	if err != nil {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}
-
+	spotifyPlaylist := "1ppfDotGdYV1FKRGkD9tZM"
 	//SPOTIFY STUFF
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +69,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var unwantedSongs []string
+
+
+	// filename := "example.txt" // Replace with your file path
+	// songs, err := readFileToSlice(filename)
+	// if err != nil {
+	// 	fmt.Printf("Error reading file: %v", err)
+	// 	return
+	// }
+
+
+
+
+	var toDeleteSongs []string
 	fmt.Println("Choose from 0 to 9 to add a song to the playlist, or enter 11 to skip the song:")
 	for _, song := range songs {
 		fmt.Println(song)
@@ -82,7 +96,7 @@ func main() {
 				if i >= 9 {
 					break
 				}
-				fmt.Printf("Track %d: %s - %s\n", i+1, track.Artists[0].Name, track.Name)
+				fmt.Printf("Track %d: %s - %s\n", i, track.Artists[0].Name, track.Name)
 			}
 		}
 
@@ -95,16 +109,17 @@ func main() {
 
 		if isNumberInRange(userReply) {
 			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name)
+			toDeleteSongs = append(toDeleteSongs, song)
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 		} else if userReply == 11 {
 			fmt.Println("You chose to skip this song")
-			unwantedSongs = append(unwantedSongs, song)
+			// toDeleteSongs = append(toDeleteSongs, song)
 		} else {
 			fmt.Println("Something is wrong")
 		}
 	}
 
-	content := strings.Join(unwantedSongs, "\n")
+	content := strings.Join(toDeleteSongs, "\n")
 	errFile := ioutil.WriteFile("song_list.txt", []byte(content), 0644)
 	if err != nil {
 		log.Fatalf("Unable to write to file: %v", errFile)
@@ -197,4 +212,24 @@ func authenticateSpotify() (*spotify.Client, error) {
 
 func isNumberInRange(num int) bool {
 	return num >= 0 && num <= 9
+}
+func readFileToSlice(filename string) ([]string, error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lines := []string{}
+
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
 }

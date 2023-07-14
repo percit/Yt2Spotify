@@ -1,0 +1,2 @@
+	// ytPlaylistID := "PLxKqTrK2bWofPrwnN3mfN-P-YVejO09AX"
+	// spotifyPlaylist := "1ppfDotGdYV1FKRGkD9tZM"
