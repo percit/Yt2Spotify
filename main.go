@@ -90,7 +90,7 @@ func main() {
 		_, errUserReply := fmt.Scan(&userReply)
 		if errUserReply != nil {
 			fmt.Println("Invalid input:", errUserReply)
-			return
+			continue
 		}
 
 		if isNumberInRange(userReply) {
