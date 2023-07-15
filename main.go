@@ -9,13 +9,11 @@ import (
 	"net/http"
 	"strings"
 
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
-
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
 	"github.com/percit/Yt2Spotify/helpers"
+	"github.com/percit/Yt2Spotify/yt"
 )
 
 var (
@@ -54,7 +52,7 @@ func main() {
 	}
 
 	//YOUTUBE STUFF
-	songs, err := getYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
+	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
 	if err != nil {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}
@@ -116,38 +114,8 @@ func main() {
 	fmt.Println("Song list saved to 'song_list.txt'")
 }
 
-func getYoutubePlaylistItems(playlistID string, apiKey string) ([]string, error) {
-	ctx := context.Background()
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
-	if err != nil {
-		return nil, err
-	}
 
-	var playlistItems []string
-	nextPageToken := ""
-	for {
-		playlistCall := youtubeService.PlaylistItems.List([]string{"snippet"}).
-			PlaylistId(playlistID).
-			MaxResults(50).
-			PageToken(nextPageToken)
 
-		playlistResponse, err := playlistCall.Do()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, playlistItem := range playlistResponse.Items {
-			playlistItems = append(playlistItems, playlistItem.Snippet.Title)
-		}
-
-		nextPageToken = playlistResponse.NextPageToken
-		if nextPageToken == "" {
-			break
-		}
-	}
-
-	return playlistItems, nil
-}
 
 func completeAuth(w http.ResponseWriter, r *http.Request) {
 	tok, err := auth.Token(r.Context(), state, r)
@@ -186,6 +154,4 @@ func authenticateSpotify() (*spotify.Client, error) {
 	}
 
 	return client, nil
-}
-
 }
