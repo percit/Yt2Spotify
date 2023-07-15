@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,34 +15,21 @@ import (
 	"github.com/percit/Yt2Spotify/spotifyAuth"
 )
 
-var (
-	GoogleApiToken       string
-	SpotifyClientID      string
-	SpotifyClientSecret  string
-)
-
-func init() {
-	flag.StringVar(&GoogleApiToken, "g", "", "Google API Token")
-	flag.StringVar(&SpotifyClientID, "c", "", "Spotify Client ID")
-	flag.StringVar(&SpotifyClientSecret, "s", "", "Spotify Client Secret")
-	flag.Parse()
-}
-
 func main() {
-	ytPlaylistID, err := getUserInput("Type YouTube playlist from which you wish to export songs:")
+	ytPlaylistID, err := helpers.GetUserInput("Type YouTube playlist from which you wish to export songs:")
 	if err != nil {
 		fmt.Println("Error reading input:", err)
 		return
 	}
 
-	spotifyPlaylist, err := getUserInput("Type Spotify playlist to which you wish to import songs:")
+	spotifyPlaylist, err := helpers.GetUserInput("Type Spotify playlist to which you wish to import songs:")
 	if err != nil {
 		fmt.Println("Error reading input:", err)
 		return
 	}
 
 	//YOUTUBE STUFF
-	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
+	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, helpers.GoogleApiToken)
 	if err != nil {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}

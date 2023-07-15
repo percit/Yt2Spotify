@@ -8,8 +8,10 @@ To make it work:
 - install Go (I used Go 20)
 - go build go build -o yt2Spotify 
 - ./yt2Spotify -g GoogleApiToken -c SpotifyClientID -s SpotifyClientSecret
-- unfortunetely for now you have to hard code SpotifyClientSecret and SpotifyClientID in main.go (line 28-29), as reading from input doesn't work yet
+- unfortunetely for now you have to hard code SpotifyClientSecret and SpotifyClientID in spotifyAuth/spotifyAuth.go (line 17,18), as reading from input doesn't work yet
 - press numbers from 1 to 11 to add yt song to spotify playlist or just add to txt file
 
 TODO
 - add nicer terminal "gui", maybe this: https://github.com/rivo/tview
+- add deleting from yt playlist when appending to spotify playlist
+- fix error with reading SpotifyClientID and SpotifyClientSecret from flags
