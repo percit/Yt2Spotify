@@ -14,6 +14,8 @@ import (
 
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
+
+	"github.com/percit/Yt2Spotify/helpers"
 )
 
 var (
@@ -93,7 +95,7 @@ func main() {
 			continue
 		}
 
-		if isNumberInRange(userReply) {
+		if helpers.IsNumberInRange(userReply) {
 			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name, results.Tracks.Tracks[userReply].Artists[0].Name)
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 		} else if userReply == 11 {
@@ -112,16 +114,6 @@ func main() {
 	}
 
 	fmt.Println("Song list saved to 'song_list.txt'")
-}
-
-func getUserInput(prompt string) (string, error) {
-	fmt.Println(prompt)
-	var input string
-	_, err := fmt.Scan(&input)
-	if err != nil {
-		return "", fmt.Errorf("error reading input: %v", err)
-	}
-	return input, nil
 }
 
 func getYoutubePlaylistItems(playlistID string, apiKey string) ([]string, error) {
@@ -196,6 +188,4 @@ func authenticateSpotify() (*spotify.Client, error) {
 	return client, nil
 }
 
-func isNumberInRange(num int) bool {
-	return num >= 0 && num <= 9
 }
