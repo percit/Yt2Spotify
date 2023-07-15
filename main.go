@@ -9,26 +9,17 @@ import (
 	"net/http"
 	"strings"
 
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
-
 	"github.com/zmb3/spotify/v2"
-	spotifyauth "github.com/zmb3/spotify/v2/auth"
+
+	"github.com/percit/Yt2Spotify/helpers"
+	"github.com/percit/Yt2Spotify/yt"
+	"github.com/percit/Yt2Spotify/spotifyAuth"
 )
 
 var (
 	GoogleApiToken       string
 	SpotifyClientID      string
 	SpotifyClientSecret  string
-	redirectURI          = "http://localhost:8080/callback"
-	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), 
-		spotifyauth.WithScopes(
-		spotifyauth.ScopePlaylistModifyPublic,
-		spotifyauth.ScopePlaylistModifyPrivate,), 
-		spotifyauth.WithClientID(SpotifyClientID), 
-		spotifyauth.WithClientSecret(SpotifyClientSecret))
-	ch    = make(chan *spotify.Client)
-	state = "abc123"
 )
 
 func init() {
@@ -52,17 +43,17 @@ func main() {
 	}
 
 	//YOUTUBE STUFF
-	songs, err := getYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
+	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, GoogleApiToken)
 	if err != nil {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}
 
 	//SPOTIFY STUFF
-	http.HandleFunc("/callback", completeAuth)
+	http.HandleFunc("/callback", spotifyAuth.CompleteAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Got request for:", r.URL.String())
 	})
-	client, err := authenticateSpotify()
+	client, err := spotifyAuth.AuthenticateSpotify()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,12 +84,12 @@ func main() {
 			continue
 		}
 
-		if isNumberInRange(userReply) {
+		if helpers.IsNumberInRange(userReply) {
 			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name, results.Tracks.Tracks[userReply].Artists[0].Name)
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 		} else if userReply == 11 {
 			fmt.Println("You chose to skip this song")
-			unwantedSongs = append(unwantedSongs, song)
+			unwantedSongs = append(unwantedSongs, song) //TODO this should actually delete from yt playlist the ones that are on spotify
 		} else {
 			fmt.Println("Something is wrong")
 		}
@@ -112,90 +103,4 @@ func main() {
 	}
 
 	fmt.Println("Song list saved to 'song_list.txt'")
-}
-
-func getUserInput(prompt string) (string, error) {
-	fmt.Println(prompt)
-	var input string
-	_, err := fmt.Scan(&input)
-	if err != nil {
-		return "", fmt.Errorf("error reading input: %v", err)
-	}
-	return input, nil
-}
-
-func getYoutubePlaylistItems(playlistID string, apiKey string) ([]string, error) {
-	ctx := context.Background()
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
-	if err != nil {
-		return nil, err
-	}
-
-	var playlistItems []string
-	nextPageToken := ""
-	for {
-		playlistCall := youtubeService.PlaylistItems.List([]string{"snippet"}).
-			PlaylistId(playlistID).
-			MaxResults(50).
-			PageToken(nextPageToken)
-
-		playlistResponse, err := playlistCall.Do()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, playlistItem := range playlistResponse.Items {
-			playlistItems = append(playlistItems, playlistItem.Snippet.Title)
-		}
-
-		nextPageToken = playlistResponse.NextPageToken
-		if nextPageToken == "" {
-			break
-		}
-	}
-
-	return playlistItems, nil
-}
-
-func completeAuth(w http.ResponseWriter, r *http.Request) {
-	tok, err := auth.Token(r.Context(), state, r)
-	if err != nil {
-		http.Error(w, "Couldn't get token", http.StatusForbidden)
-		log.Fatal(err)
-	}
-
-	if st := r.FormValue("state"); st != state {
-		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", st, state)
-	}
-
-	// use the token to get an authenticated client
-	client := spotify.New(auth.Client(r.Context(), tok))
-	fmt.Fprintf(w, "Login Completed!")
-	ch <- client
-}
-
-func authenticateSpotify() (*spotify.Client, error) {
-
-	go func() {
-		err := http.ListenAndServe(":8080", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	url := auth.AuthURL(state)
-	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
-
-	client := <-ch
-	_, err := client.CurrentUser(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("unable to get Spotify user: %v", err)
-	}
-
-	return client, nil
-}
-
-func isNumberInRange(num int) bool {
-	return num >= 0 && num <= 9
 }
