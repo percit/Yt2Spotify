@@ -10,25 +10,16 @@ import (
 	"strings"
 
 	"github.com/zmb3/spotify/v2"
-	spotifyauth "github.com/zmb3/spotify/v2/auth"
 
 	"github.com/percit/Yt2Spotify/helpers"
 	"github.com/percit/Yt2Spotify/yt"
+	"github.com/percit/Yt2Spotify/spotifyAuth"
 )
 
 var (
 	GoogleApiToken       string
 	SpotifyClientID      string
 	SpotifyClientSecret  string
-	redirectURI          = "http://localhost:8080/callback"
-	auth = spotifyauth.New(spotifyauth.WithRedirectURL(redirectURI), 
-		spotifyauth.WithScopes(
-		spotifyauth.ScopePlaylistModifyPublic,
-		spotifyauth.ScopePlaylistModifyPrivate,), 
-		spotifyauth.WithClientID(SpotifyClientID), 
-		spotifyauth.WithClientSecret(SpotifyClientSecret))
-	ch    = make(chan *spotify.Client)
-	state = "abc123"
 )
 
 func init() {
@@ -58,11 +49,11 @@ func main() {
 	}
 
 	//SPOTIFY STUFF
-	http.HandleFunc("/callback", completeAuth)
+	http.HandleFunc("/callback", spotifyAuth.CompleteAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Got request for:", r.URL.String())
 	})
-	client, err := authenticateSpotify()
+	client, err := spotifyAuth.AuthenticateSpotify()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,7 +89,7 @@ func main() {
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 		} else if userReply == 11 {
 			fmt.Println("You chose to skip this song")
-			unwantedSongs = append(unwantedSongs, song)
+			unwantedSongs = append(unwantedSongs, song) //TODO this should actually delete from yt playlist the ones that are on spotify
 		} else {
 			fmt.Println("Something is wrong")
 		}
@@ -112,46 +103,4 @@ func main() {
 	}
 
 	fmt.Println("Song list saved to 'song_list.txt'")
-}
-
-
-
-
-func completeAuth(w http.ResponseWriter, r *http.Request) {
-	tok, err := auth.Token(r.Context(), state, r)
-	if err != nil {
-		http.Error(w, "Couldn't get token", http.StatusForbidden)
-		log.Fatal(err)
-	}
-
-	if st := r.FormValue("state"); st != state {
-		http.NotFound(w, r)
-		log.Fatalf("State mismatch: %s != %s\n", st, state)
-	}
-
-	// use the token to get an authenticated client
-	client := spotify.New(auth.Client(r.Context(), tok))
-	fmt.Fprintf(w, "Login Completed!")
-	ch <- client
-}
-
-func authenticateSpotify() (*spotify.Client, error) {
-
-	go func() {
-		err := http.ListenAndServe(":8080", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	url := auth.AuthURL(state)
-	fmt.Println("Please log in to Spotify by visiting the following page in your browser:", url)
-
-	client := <-ch
-	_, err := client.CurrentUser(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("unable to get Spotify user: %v", err)
-	}
-
-	return client, nil
 }
