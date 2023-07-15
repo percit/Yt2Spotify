@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"github.com/zmb3/spotify/v2"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
+	"github.com/percit/Yt2Spotify/helpers"
 )
 
 var (
@@ -14,8 +15,8 @@ var (
 		spotifyauth.WithScopes(
 		spotifyauth.ScopePlaylistModifyPublic,
 		spotifyauth.ScopePlaylistModifyPrivate,), 
-		spotifyauth.WithClientID(""), 
-		spotifyauth.WithClientSecret(""))
+		spotifyauth.WithClientID(helpers.SpotifyClientID), 
+		spotifyauth.WithClientSecret(helpers.SpotifyClientSecret))
 	ch    = make(chan *spotify.Client)
 	state = "abc123"
 )
