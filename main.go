@@ -68,9 +68,9 @@ func main() {
 	}
 
 	var unwantedSongs []string
-	fmt.Println("Choose from 0 to 9 to add a song to the playlist, or enter 11 to skip the song:")
+	fmt.Println("\nChoose from 0 to 9 to add a song to the playlist, or enter 11 to skip the song:\n")
 	for _, song := range songs {
-		fmt.Println(song)
+		fmt.Println("Youtube Song:" + song)
 		results, err := client.Search(context.Background(), song, spotify.SearchTypeTrack)
 		if err != nil {
 			log.Fatal(err)
@@ -94,7 +94,7 @@ func main() {
 		}
 
 		if isNumberInRange(userReply) {
-			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name)
+			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name, results.Tracks.Tracks[userReply].Artists[0].Name)
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 		} else if userReply == 11 {
 			fmt.Println("You chose to skip this song")
@@ -102,6 +102,7 @@ func main() {
 		} else {
 			fmt.Println("Something is wrong")
 		}
+		fmt.Println("\n")
 	}
 
 	content := strings.Join(unwantedSongs, "\n")
