@@ -17,7 +17,8 @@ Choose the application type based on your requirements (e.g., Web application, D
 Enter a name for the OAuth 2.0 client ID and configure the authorized JavaScript origins and redirect URIs if applicable.
 - Click on the "Create" button to generate the OAuth client ID and client secret.
 Note down the API credentials: After creating the OAuth client ID, you will see a dialog box displaying the client ID and client secret. Take note of these credentials as you will need them in your application for authentication.
-
+- go to oauth credentials and click "Authorised redirect URIs" and set it as localhost
+- add yourself as tester in "Credentials" section
 
 ## Spotify
 - Go to the Spotify Developer Dashboard: Visit the Spotify Developer Dashboard at https://developer.spotify.com/dashboard/ and sign in with your Spotify account or create a new account if you don't have one.
