@@ -10,26 +10,50 @@ import (
 
 	"github.com/zmb3/spotify/v2"
 
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/youtube/v3"
+
 	"github.com/percit/Yt2Spotify/helpers"
 	"github.com/percit/Yt2Spotify/yt"
 	"github.com/percit/Yt2Spotify/spotifyAuth"
 )
-
+const (
+	redirectURL  = "http://localhost:8080"
+	ytPlaylistID = "PLxKqTrK2bWoe6mmjllCaFMj09F1s3FCRy"
+	spotifyPlaylist = "1ppfDotGdYV1FKRGkD9tZM"
+)
 func main() {
-	ytPlaylistID, err := helpers.GetUserInput("Type YouTube playlist from which you wish to export songs:")
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
+	// ytPlaylistID, err := helpers.GetUserInput("Type YouTube playlist from which you wish to export songs:")
+	// if err != nil {
+	// 	fmt.Println("Error reading input:", err)
+	// 	return
+	// }
 
-	spotifyPlaylist, err := helpers.GetUserInput("Type Spotify playlist to which you wish to import songs:")
-	if err != nil {
-		fmt.Println("Error reading input:", err)
-		return
-	}
+	// spotifyPlaylist, err := helpers.GetUserInput("Type Spotify playlist to which you wish to import songs:")
+	// if err != nil {
+	// 	fmt.Println("Error reading input:", err)
+	// 	return
+	// }
 
 	//YOUTUBE STUFF
-	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, helpers.GoogleApiToken)
+	config := &oauth2.Config{
+		ClientID:     helpers.GoogleClientID,
+		ClientSecret: helpers.GoogleClientSecret,
+		RedirectURL:  redirectURL,
+		Scopes:       []string{youtube.YoutubeForceSslScope},
+		Endpoint:     google.Endpoint,
+	}
+
+	ctx := context.Background()
+
+	// Get OAuth 2.0 token
+	token, err := yt.GetToken(ctx, config)
+	if err != nil {
+		log.Fatalf("Unable to get OAuth 2.0 token: %v", err)
+	}
+
+	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, config, token)
 	if err != nil {
 		log.Fatalf("Unable to get playlist items: %v", err)
 	}
@@ -75,7 +99,7 @@ func main() {
 			fmt.Println("You chose song:", results.Tracks.Tracks[userReply].Name, results.Tracks.Tracks[userReply].Artists[0].Name)
 			client.AddTracksToPlaylist(context.Background(), spotify.ID(spotifyPlaylist), results.Tracks.Tracks[userReply].ID)
 			songsAddedToSpotify = append(songsAddedToSpotify, song.Title)
-			yt.DeleteSongByID(ytPlaylistID, song.PlaylistItemID, helpers.GoogleApiToken)//TODO this should actually delete from yt playlist the ones that are on spotify
+			yt.DeleteSongByID(ytPlaylistID, song.PlaylistItemID, config, token)//TODO this should actually delete from yt playlist the ones that are on spotify
 		} else if userReply == 11 {
 			fmt.Println("You chose to skip this song")
 			unwantedSongs = append(unwantedSongs, song.Title)

@@ -6,15 +6,17 @@ import (
 )
 
 var (
-	GoogleApiToken       string
+	GoogleClientID       string
+	GoogleClientSecret   string
 	SpotifyClientID      string
 	SpotifyClientSecret  string
 )
 
 func init() {
-	flag.StringVar(&GoogleApiToken, "g", "", "Google API Token")
-	flag.StringVar(&SpotifyClientID, "c", "", "Spotify Client ID")
-	flag.StringVar(&SpotifyClientSecret, "s", "", "Spotify Client Secret")
+	flag.StringVar(&GoogleClientID, "gi", "", "Google ClientID")
+	flag.StringVar(&GoogleClientSecret, "gs", "", "Google ClientSecret")
+	flag.StringVar(&SpotifyClientID, "sc", "", "Spotify Client ID")
+	flag.StringVar(&SpotifyClientSecret, "ss", "", "Spotify Client Secret")
 	flag.Parse()
 }
 
