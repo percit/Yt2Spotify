@@ -19,7 +19,7 @@ import (
 	"github.com/percit/Yt2Spotify/spotifyAuth"
 )
 const (
-	redirectURL  = "http://localhost:8080"
+	redirectURL  = "http://localhost:3000/login"
 	ytPlaylistID = "PLxKqTrK2bWoe6mmjllCaFMj09F1s3FCRy"
 	spotifyPlaylist = "1ppfDotGdYV1FKRGkD9tZM"
 )
@@ -52,6 +52,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to get OAuth 2.0 token: %v", err)
 	}
+	log.Println("DUPA")
 
 	songs, err := yt.GetYoutubePlaylistItems(ytPlaylistID, config, token)
 	if err != nil {
