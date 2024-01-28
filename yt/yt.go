@@ -3,14 +3,11 @@ package yt
 import (
 	"context"
 	"fmt"
-	"os"
-	"encoding/json"
-	"log"
+
 
 	"google.golang.org/api/option"
 	"google.golang.org/api/youtube/v3"
 	"golang.org/x/oauth2"
-	// "golang.org/x/oauth2/google"
 )
 
 type PlaylistInfo struct {
@@ -76,51 +73,51 @@ func DeleteSongByID(playlistID string, songID string,config *oauth2.Config, toke
 	return nil
 }
 
-func GetToken(ctx context.Context, config *oauth2.Config) (*oauth2.Token, error) {
-	// Check if a token already exists in the cache or perform the OAuth 2.0 authorization flow
-	tokenFile := "token.json"
-	token, err := tokenFromFile(tokenFile)
-	if err != nil {
-		token = getTokenFromWeb(config)
-		saveToken(tokenFile, token)
-	}
-	return token, nil
-}
+// func GetToken(ctx context.Context, config *oauth2.Config) (*oauth2.Token, error) {
+// 	// Check if a token already exists in the cache or perform the OAuth 2.0 authorization flow
+// 	tokenFile := "token.json"
+// 	token, err := tokenFromFile(tokenFile)
+// 	if err != nil {
+// 		token = getTokenFromWeb(config)
+// 		saveToken(tokenFile, token)
+// 	}
+// 	return token, nil
+// }
 
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
-	return tok, err
-}
+// func tokenFromFile(file string) (*oauth2.Token, error) {
+// 	f, err := os.Open(file)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer f.Close()
+// 	tok := &oauth2.Token{}
+// 	err = json.NewDecoder(f).Decode(tok)
+// 	return tok, err
+// }
 
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser:\n%v\n", authURL)
+// func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+// 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+// 	fmt.Printf("Go to the following link in your browser:\n%v\n", authURL)
 
-	var code string
-	fmt.Scanln(&code)
+// 	var code string
+// 	fmt.Scanln(&code)
 
-	tok, err := config.Exchange(context.Background(), code)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return tok
-}
+// 	tok, err := config.Exchange(context.Background(), code)
+// 	if err != nil {
+// 		log.Fatalf("Unable to retrieve token from web: %v", err)
+// 	}
+// 	return tok
+// }
 
-func saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
-	f, err := os.Create(file)
-	if err != nil {
-		log.Fatalf("Unable to cache OAuth token: %v", err)
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-}
+// func saveToken(file string, token *oauth2.Token) {
+// 	fmt.Printf("Saving credential file to: %s\n", file)
+// 	f, err := os.Create(file)
+// 	if err != nil {
+// 		log.Fatalf("Unable to cache OAuth token: %v", err)
+// 	}
+// 	defer f.Close()
+// 	json.NewEncoder(f).Encode(token)
+// }
 
 // Error deleting playlist item  googleapi: Error 401: API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication
 // Details:
