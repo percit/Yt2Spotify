@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"runtime"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -21,7 +20,7 @@ import (
 )
 
 var (
-	redirectURL  = "http://localhost:8080"
+	redirectURL  = "http://localhost:8080" //to nie dziala z zadnym portem
 	config = &oauth2.Config{
 		ClientID:     helpers.GoogleClientID,
 		ClientSecret: helpers.GoogleClientSecret,

@@ -24,7 +24,7 @@ func main() {
 
 
 	
-	ytClient := yt.GetClient(youtube.YoutubeReadonlyScope)
+	ytClient := yt.GetClient(youtube.Youtube)
 	_, err := youtube.New(ytClient)
 	
 	if err != nil {
