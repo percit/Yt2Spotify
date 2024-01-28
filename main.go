@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	// "os"
-	// "encoding/json"
+	"os"
+	"encoding/json"
 
 	"github.com/zmb3/spotify/v2"
 
@@ -53,6 +53,14 @@ func main() {
 	fmt.Println("Starting server on :3000")
 	log.Fatal(http.ListenAndServe(":3000", nil))
 
+
+
+
+
+
+
+
+	
 	//SPOTIFY AUTH
 	http.HandleFunc("/callback", spotifyAuth.CompleteAuth)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -154,29 +162,7 @@ func handleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 
-package main
 
-import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"log"
-	"net/http"
-	"os"
-
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/youtube/v3"
-)
-
-func redirectionHandler(w http.ResponseWriter, req *http.Request) {
-	code := req.FormValue("code")
-	if code != "" {
-		w.Write([]byte("Copy the following auth code and paste it to the terminal:\n\n" + code))
-	} else {
-		w.Write([]byte("Error: " + req.FormValue("error")))
-	}
-}
 
 // func main() {
 // 	srv := &http.Server{Addr: ":8090"}
@@ -197,6 +183,15 @@ func redirectionHandler(w http.ResponseWriter, req *http.Request) {
 // 	}
 // 	srv.Close()
 // }
+
+func redirectionHandler(w http.ResponseWriter, req *http.Request) {
+	code := req.FormValue("code")
+	if code != "" {
+		w.Write([]byte("Copy the following auth code and paste it to the terminal:\n\n" + code))
+	} else {
+		w.Write([]byte("Error: " + req.FormValue("error")))
+	}
+}
 
 func CreateOauthToken() error {
 	b, err := os.ReadFile("client_secret.json")
